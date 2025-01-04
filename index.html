@@ -1,0 +1,393 @@
+<!DOCTYPE html>
+<html lang="en" class="ios ios-translucent-bars ios-translucent-modals device-pixel-ratio-2 device-ios ios dark">
+<head>
+  <meta charset="utf-8">
+  <link rel="apple-touch-icon" href="favicon.ico">
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, minimum-scale=1, user-scalable=no, viewport-fit=cover">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <title>TrollCheck</title>
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/framework7@8.3.3/framework7-bundle.min.css" integrity="sha256-cK8qB/ROffwYFEJ4KDE1DKIQqES7GT1/VmrZr+KWfqw=" crossorigin="anonymous">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/framework7-icons@5.0.5/css/framework7-icons.css" integrity="sha256-RSzKDnaL5c8/Ksi7QeDBiOtJSr5k3LbqDGqs4NKDl7M=" crossorigin="anonymous">
+</head>
+<body>
+  <div id="app">
+    <div class="view view-main">
+      <div data-name="home" class="page">
+        <div class="navbar navbar-large navbar-transparent">
+          <div class="navbar-bg"></div>
+          <div class="navbar-inner sliding">
+            <div class="title">TrollCheck</div>
+            <div class="title-large">
+              <div class="title-large-text">TrollCheck</div>
+            </div>
+          </div>
+        </div>
+        <div class="page-content">
+            <div class="block inset"><h3>预计iOS版本: <span id="ios-version"></span></h3></div>
+          <div class="block-title">选择设备</div>
+          <div class="list list-strong list-dividers inset">
+            <ul>
+              <li>
+                <a id="chooseDevice" class="list-button" onclick="openDevicePicker()">选择设备</a>
+              </li>
+              <li>
+                <a id="chooseVersion" class="list-button" onclick="openVersionPicker()">选择iOS版本</a>
+              </li>
+              <li>
+                <a onclick="checkSupport()" type="button" class="list-button">查询</a>
+              </li>
+            </ul>
+          </div>
+          <div class="block-title">支持信息</div>
+          <div id="supportInfo" class="block block-strong inset">    
+            <p id="trollstore-support" style="color:red;">TrollStore支持：未知</p>
+            <a id="cfwButton" style="display:none;" href="https://ios.cfw.guide/installing-trollstore/" target="_blank" class="button button-raised button-fill external">安装指南</a> 
+          </div>
+<div class="list list-strong list-dividers media-list inset"><ul>
+        <li><a href="https://github.com/initial11/TrollCheck" class="item-link item-content external"><div class="item-media"><i class="f7-icons">logo_github</i></div><div class="item-inner"><div class="item-title-row"><div class="item-title">GitHub</div></div></div></a></li></ul>
+      </div>
+    </div>
+  </div>
+  <script src="https://cdn.jsdelivr.net/npm/framework7@8.3.3/framework7-bundle.min.js" integrity="sha256-1r9ib4mhGW3+qxoxb4nz2z4GkQqNG/CUa4Emli2pL2I=" crossorigin="anonymous"></script>
+  <script src="app.js"></script>
+  <script>
+    var selectedVersionType = 'release';
+var selectedDevice = null;
+var selectedArchitecture = 'arm64';
+var iosVersion = null;
+
+const deviceList = [
+  { model: '选择设备', architecture: '' }, 
+  { model: 'iPhone 6s', architecture: 'arm64' },
+  { model: 'iPhone 6s Plus', architecture: 'arm64' },
+  { model: 'iPhone 7', architecture: 'arm64' },
+  { model: 'iPhone 7 Plus', architecture: 'arm64' },
+  { model: 'iPhone 8', architecture: 'arm64' },
+  { model: 'iPhone 8 Plus', architecture: 'arm64' },
+  { model: 'iPhone X', architecture: 'arm64e' },
+  { model: 'iPhone XR', architecture: 'arm64e' },
+  { model: 'iPhone XS', architecture: 'arm64e' },
+  { model: 'iPhone XS Max', architecture: 'arm64e' },
+  { model: 'iPhone 11', architecture: 'arm64e' },
+  { model: 'iPhone 11 Pro', architecture: 'arm64e' },
+  { model: 'iPhone 11 Pro Max', architecture: 'arm64e' },
+  { model: 'iPhone SE(第二代)', architecture: 'arm64e' }, 
+  { model: 'iPhone 12', architecture: 'arm64e' },
+  { model: 'iPhone 12 mini', architecture: 'arm64e' },
+  { model: 'iPhone 12 Pro', architecture: 'arm64e' },
+  { model: 'iPhone 12 Pro Max', architecture: 'arm64e' },
+  { model: 'iPhone 13', architecture: 'arm64e' },
+  { model: 'iPhone 13 mini', architecture: 'arm64e' },
+  { model: 'iPhone 13 Pro', architecture: 'arm64e' },
+  { model: 'iPhone 13 Pro Max', architecture: 'arm64e' },
+  { model: 'iPhone SE(第三代)', architecture: 'arm64e' }, 
+  { model: 'iPhone 14', architecture: 'arm64e' },
+  { model: 'iPhone 14 Plus', architecture: 'arm64e' },
+  { model: 'iPhone 14 Pro', architecture: 'arm64e' },
+  { model: 'iPhone 14 Pro Max', architecture: 'arm64e' },
+  { model: 'iPhone 15', architecture: 'arm64e' },
+  { model: 'iPhone 15 Plus', architecture: 'arm64e' },
+  { model: 'iPhone 15 Pro', architecture: 'arm64e' },
+  { model: 'iPhone 15 Pro Max', architecture: 'arm64e' },
+  { model: 'iPad Air (第二代)', architecture: 'arm64' },
+  { model: 'iPad Air (第三代)', architecture: 'arm64' },
+  { model: 'iPad Air (第四代)', architecture: 'arm64e' },
+  { model: 'iPad mini (第四代)', architecture: 'arm64' },
+  { model: 'iPad mini (第五代)', architecture: 'arm64' },
+  { model: 'iPad mini (第六代)', architecture: 'arm64e' },
+  { model: 'iPad (第五代)', architecture: 'arm64' },
+  { model: 'iPad (第六代)', architecture: 'arm64' },
+  { model: 'iPad (第七代)', architecture: 'arm64' },
+  { model: 'iPad (第八代)', architecture: 'arm64e' },
+  { model: 'iPad (第九代)', architecture: 'arm64e' },
+  { model: 'iPad Pro 10.5-英寸', architecture: 'arm64' },
+  { model: 'iPad Pro 9.7-英寸', architecture: 'arm64' },
+  { model: 'iPad Pro 11-英寸 (第一代)', architecture: 'arm64' },
+  { model: 'iPad Pro 11-英寸 ((第二代)', architecture: 'arm64e' },
+  { model: 'iPad Pro 11-英寸 (第三代)', architecture: 'arm64e' },
+  { model: 'iPad Pro 12.9-英寸 (第一代)', architecture: 'arm64' },
+  { model: 'iPad Pro 12.9-英寸 (第二代)', architecture: 'arm64' },
+  { model: 'iPad Pro 12.9-英寸 (第三代)', architecture: 'arm64e' },
+  { model: 'iPad Pro 12.9-英寸 (第四代)', architecture: 'arm64e' },
+  { model: 'iPad Pro 12.9-英寸 (第五代)', architecture: 'arm64e' }
+];
+
+const iosVersions = [
+  '14.0 Beta 1', '14.0', '14.1', '14.2', '14.3', '14.4', '14.5', '14.5.1', '14.6', '14.7','14.7.1', '14.8', '14.8.1', 
+  '15.0', '15.1', '15.2', '15.3', '15.4', '15.5', '15.6', '15.7','15.7.1', '15.7.2', '15.7.3','15.7.4','15.7.5','15.7.6','15.7.7','15.7.8','15.7.9', '15.8', '15.8.1', '15.8.2', '15.8.3', 
+  '16.0', '16.1', '16.2', '16.3', '16.4', '16.5', '16.6', '16.7 RC', '16.7', '16.7.10', '17.0', '17.0.1', '17.0.2', '17.0.3','17.1', '17.2','17.3','17.3.1','17.4','17.4.1','17.5','17.5.1','17.6','17.6.1','17.6.2','17.7','18.0','18.1'
+];
+
+const versionSupport = {
+  '17.0.2': 'Unsupported❌',
+  '17.0.3': 'Unsupported❌',
+  '17.1': 'Unsupported❌', 
+  '17.2': 'Unsupported❌',
+  '17.3': 'Unsupported❌',
+  '17.4': 'Unsupported❌',
+  '17.4.1': 'Unsupported❌',
+  '17.5': 'Unsupported❌',
+  '17.5.1': 'Unsupported❌',
+  '17.6': 'Unsupported❌',
+  '17.6.1': 'Unsupported❌',
+  '17.6.2': 'Unsupported❌',
+  '17.7': 'Unsupported❌',
+  '18.0': 'Unsupported❌',
+  '18.1': 'Unsupported❌',
+  '14.0 Beta 1': 'Unsupported❌',
+  '14.0': 'Supported!✅',
+  '14.7.1': 'Supported!✅',
+  '14.8.1': 'Supported!✅',
+  '15.0': 'Supported!✅',
+  '15.5 Beta 4': 'Supported!✅',
+  '15.5': 'Supported!✅',
+  '15.6 Beta 1': 'Supported!✅',
+  '15.6 Beta 3': 'Supported!✅',
+  '15.6': 'Supported✅', 
+  '15.6.1': 'Supported!✅',
+  '15.7': 'Supported!✅',
+  '15.7.1': 'Supported!✅',
+  '15.7.2': 'Supported!✅',
+  '15.7.3': 'Supported!✅',
+  '15.7.4': 'Supported!✅',
+  '15.7.5': 'Supported!✅',
+  '15.7.6': 'Supported!✅',
+  '15.7.7': 'Supported!✅',
+  '15.7.8': 'Supported!✅',
+  '15.7.9': 'Supported!✅',
+  '15.8.3': 'Supported!✅',
+  '16.0 Beta 1': 'Supported!✅',
+  '16.0 Beta 3': 'Supported!✅',
+  '16.0 Beta 4': 'Supported!✅',
+  '16.6.1': 'Supported!✅',
+  '16.7 RC': 'Supported✅',
+  '16.7': 'Unsupported❌',
+  '16.7.10': 'Unsupported❌',
+  '17.0 Beta 1': 'Supported✅',
+  '17.0 Beta 4': 'Supported✅',
+  '17.0': 'Supported✅',
+  '17.0.1': 'Unsupported❌',
+  '14.1': 'Supported!✅',
+  '14.2': 'Supported!✅',
+  '14.3': 'Supported!✅',
+  '14.4': 'Supported!✅',
+  '14.5': 'Supported!✅',
+  '14.5.1': 'Supported!✅',
+  '14.6': 'Supported!✅',
+  '14.7': 'Supported!✅',
+  '14.8': 'Supported!✅',
+  '15.1': 'Supported!✅',
+  '15.2': 'Supported!✅',
+  '15.3': 'Supported!✅',
+  '15.4': 'Supported!✅',
+  '15.6': 'Supported!✅',
+  '15.8': 'Supported!✅',
+  '16.0': 'Supported!✅',
+  '16.1': 'Supported!✅',
+  '16.2': 'Supported!✅',
+  '16.3': 'Supported!✅',
+  '16.4': 'Supported!✅',
+  '16.5': 'Supported!✅',
+  '16.6': 'Supported!✅', 
+  
+};
+
+let pickerDevice;
+let pickerVersion;
+
+
+function openDevicePicker() {
+  if (pickerDevice) {
+    pickerDevice.open();
+    return;
+  }
+
+  pickerDevice = app.picker.create({
+    inputEl: '#chooseDevice',
+    cols: [
+      {
+        textAlign: 'center',
+        values: deviceList.map(device => device.model)
+      }
+    ],
+    on: {
+      change(picker, values) {
+        const device = deviceList.find(d => d.model === values[0]);
+        selectedDevice = device && device.model !== 'Choose Device' ? device : null;
+        selectedArchitecture = device ? device.architecture : 'arm64';
+
+        document.getElementById('chooseDevice').innerText = selectedDevice ? selectedDevice.model : 'Choose Device';
+
+        
+        iosVersion = null;
+        document.getElementById('chooseVersion').innerText = '选择版本';
+        if (pickerVersion) {
+          pickerVersion.destroy();
+          pickerVersion = null;
+        }
+      }
+    }
+  });
+  pickerDevice.open();
+}
+
+function openVersionPicker() {
+ 
+  if (pickerVersion) {
+    pickerVersion.destroy();
+  }
+
+  const [minVersion, maxVersion] = getSupportedVersionRange(selectedDevice.model);
+  const compatibleVersions = iosVersions.filter(version => version >= minVersion && version <= maxVersion);
+
+  pickerVersion = app.picker.create({
+    inputEl: '#chooseVersion',
+    cols: [
+      {
+        textAlign: 'center',
+        values: compatibleVersions
+      }
+    ],
+    on: {
+      change(picker, values) {
+        iosVersion = values[0];
+        document.getElementById('chooseVersion').innerText = iosVersion;
+      }
+    }
+  });
+  pickerVersion.open();
+}
+
+function getSupportedVersionRange(deviceModel) {
+  switch(deviceModel) {
+    // iPhones
+    case 'iPhone 6s':
+    case 'iPhone 6s Plus':
+    case 'iPhone 7':
+    case 'iPhone 7 Plus':
+    case 'iPhone SE(第一代)':
+      return ['14.0', '15.8.3'];
+    case 'iPhone 8':
+    case 'iPhone 8 Plus':
+    case 'iPhone X':
+      return ['14.0', '16.7.10'];
+    case 'iPhone XR':
+    case 'iPhone XS':
+    case 'iPhone XS Max':
+      return ['14.0', '17.0'];
+    case 'iPhone 13 mini':
+    case 'iPhone 13':
+    case 'iPhone 13 Pro':
+    case 'iPhone 13 Pro Max':
+      return ['15.0', '17.0'];
+    case 'iPhone 14':
+    case 'iPhone 14 Plus':
+    case 'iPhone 14 Pro':
+    case 'iPhone 14 Pro Max':
+      return ['16.0', '17.0'];
+    case 'iPhone 15':
+    case 'iPhone 15 Plus':
+    case 'iPhone 15 Pro':
+    case 'iPhone 15 Pro Max':
+      return ['17.0', '17.0'];
+    case 'iPhone SE(第二代)':
+      return ['14.0', '17.0'];
+    case 'iPhone SE(第三代)':
+      return ['15.4', '17.0'];
+    case 'iPad Pro 12.9-英寸 (第六代)':
+    case 'iPad Pro 11-英寸 (第四代)':
+        return ['16.0', '17.0'];
+    case 'iPad Pro 12.9-英寸 (第五代)':
+    case 'iPad Pro 11-英寸 (第三代)':
+        return ['15.0', '17.0'];
+    case 'iPad Pro 12.9-英寸 (第四代)':
+    case 'iPad Pro 11-英寸 (第二代)':
+        return ['14.0', '17.0'];
+    case 'iPad Pro 12.9-英寸 (第三代)':
+    case 'iPad Pro 11-英寸 (第一代)':
+        return ['14.0', '16.7.10'];
+    case 'iPad Pro 12.9-英寸 (第二代)':
+    case 'iPad Pro 10.5-英寸':
+        return ['14.0', '15.8.3'];
+    case 'iPad Pro 12.9-英寸 (第一代)':
+    case 'iPad Pro 9.7-英寸':
+        return ['14.0', '14.8.1'];
+    case 'iPad (第十代)':
+        return ['16.0', '17.0'];
+    case 'iPad (第九代)':
+        return ['15.0', '17.0'];
+    case 'iPad (第八代)':
+        return ['14.0', '17.0'];
+    case 'iPad (第七代)':
+        return ['14.0', '16.7.10'];
+    case 'iPad (第六代)':
+        return ['14.0', '15.7.8'];
+    case 'iPad (第五代)':
+        return ['14.0', '14.8.1'];
+    case 'iPad mini (第六代)':
+        return ['15.0', '17.0'];
+    case 'iPad mini (第五代)':
+        return ['14.0', '15.7.8'];
+    case 'iPad mini (第四代)':
+        return ['14.0', '14.8.1'];
+    case 'iPad Air (第五代)':
+        return ['15.0', '17.0'];
+    case 'iPad Air (第四代)':
+        return ['14.0', '17.0'];
+    case 'iPad Air (第三代)':
+        return ['14.0', '15.7.8'];
+    case 'iPad Air (第二代)':
+        return ['14.0', '14.8.1'];
+  }
+}
+
+
+function checkSupport() {
+  const supportInfoElement = document.getElementById('trollstore-support');
+
+  if (!selectedDevice || !iosVersion) {
+    app.dialog.alert('Please select a device and an iOS version!');
+    return;
+  }
+
+  const supportMessage = versionSupport[iosVersion] || 'Unknown Version';
+  const supportDetails = `设备型号: ${selectedDevice.model}<br>
+                          iOS 版本: ${iosVersion}<br>
+                          架构: ${selectedArchitecture}<br>
+                          TrollStore 支持: <span style="color: ${supportMessage.includes('Supported') ? 'green' : 'red'};">${supportMessage}</span>`;
+  supportInfoElement.innerHTML = supportDetails;
+  supportInfoElement.style.color = supportMessage.includes('Supported') ? 'green' : 'red';
+
+  const cfwButton = document.getElementById('cfwButton');
+  cfwButton.style.display = supportMessage === 'Unsupported❌' ? 'none' : 'block';
+}
+
+    function displayiOSVersion() {
+  const userAgent = navigator.userAgent || navigator.vendor || window.opera;
+  const iOSVersionElement = document.getElementById("ios-version");
+
+ 
+  if (/iPad|iPhone|iPod/.test(userAgent) && !window.MSStream) {
+   
+    const match = userAgent.match(/OS (\d+_\d+(_\d+)?)/);
+    
+    if (match) {
+     
+      const iOSVersion = match[1].replace(/_/g, '.');
+      iOSVersionElement.textContent = `${iOSVersion}`;
+    } else {
+      iOSVersionElement.textContent = "iOS version not detected.";
+    }
+  } else {
+    iOSVersionElement.textContent = "不是iOS设备";
+  }
+}
+displayiOSVersion();
+  </script>
+</body>
+</html>
+<style>
+    :root{
+    --f7-list-inset-border-radius: 18px;--f7-block-strong-inset-border-radius:18px;--f7-block-inset-border-radius: 18px;} 
+</style>
